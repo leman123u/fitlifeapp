@@ -1,0 +1,33 @@
+# FitLife Pro API — Google App Engine (Standard, Python 3.11)
+# Deploy from this directory:  gcloud app deploy app.yaml
+#
+# Required secrets (set before or during deploy — do not commit real values):
+#   MONGODB_URI          — MongoDB connection string (e.g. Atlas)
+#   CORS_ORIGINS         — Comma-separated frontend origins (e.g. https://yourapp.web.app)
+#
+# Optional:
+#   MONGODB_DB_NAME      — Database name (default fitlife_pro)
+#   CLOUDFLARE_FRONTEND_URL — Extra CORS origin if not using CORS_ORIGINS
+#   GOOGLE_APPLICATION_CREDENTIALS — Path inside the container only (prefer ADC on GAE)
+
+runtime: python311
+
+instance_class: F2
+
+# ASGI via Gunicorn + Uvicorn worker ($PORT is set by App Engine)
+entrypoint: gunicorn -k uvicorn.workers.UvicornWorker -w 1 --threads 1 --timeout 120 --bind :$PORT app.main:app
+
+env_variables:
+  ENVIRONMENT: production
+  MONGODB_DB_NAME: fitlife_pro
+
+automatic_scaling:
+  min_instances: 0
+  max_instances: 10
+  target_cpu_utilization: 0.65
+
+# Uncomment and fill for a first deploy, or use:
+#   gcloud app deploy app.yaml --set-env-vars="MONGODB_URI=...,CORS_ORIGINS=..."
+# env_variables:
+#   MONGODB_URI: "mongodb+srv://USER:PASS@cluster.mongodb.net/?retryWrites=true&w=majority"
+#   CORS_ORIGINS: "https://your-frontend.example.com,http://localhost:5173"

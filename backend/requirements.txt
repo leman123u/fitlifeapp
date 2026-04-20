@@ -1,0 +1,16 @@
+# FitLife Pro API — pinned for App Engine & Docker (Python 3.11)
+# Install: pip install -r requirements.txt
+
+fastapi>=0.115.0,<1.0.0
+uvicorn[standard]>=0.32.0,<1.0.0
+gunicorn>=23.0.0,<24.0.0
+
+# MongoDB (Motor wraps PyMongo; bson/pymongo are transitive)
+motor>=3.6.0,<4.0.0
+
+pydantic>=2.10.0,<3.0.0
+python-dotenv>=1.0.0,<2.0.0
+firebase-admin>=6.5.0,<7.0.0
+
+# Explicit transitive deps (helps reproducible builds on App Engine)
+pymongo>=4.9,<5.0

@@ -1,0 +1,108 @@
+# FitLife Pro — test on every push to main, then deploy API to App Engine and trigger Cloudflare Pages.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   GCP_SA_KEY                         — JSON key for a GCP service account with permission to deploy App Engine
+#   GCP_PROJECT_ID                     — Google Cloud project ID (e.g. my-project-123)
+#   CLOUDFLARE_PAGES_DEPLOY_HOOK_URL    — (Optional) Full POST URL from Cloudflare Pages → Deploy hooks
+#
+# If CLOUDFLARE_PAGES_DEPLOY_HOOK_URL is unset, the Pages step is skipped (no failure).
+# App Engine runtime env (MONGODB_URI, CORS_ORIGINS, etc.) should be set in the App Engine console
+# or via a prior deploy; this workflow does not print secrets in logs.
+
+name: CI and Deploy
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: fitlife-main-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test-frontend:
+    name: Frontend (lint, test, build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+  test-backend:
+    name: Backend (pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest
+
+      - name: Run tests
+        run: python -m pytest -q
+
+  deploy-backend:
+    name: Deploy backend (App Engine)
+    needs: [test-frontend, test-backend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure project
+        run: gcloud config set project "${{ secrets.GCP_PROJECT_ID }}"
+
+      - name: Deploy to App Engine
+        run: gcloud app deploy backend/app.yaml --quiet
+
+  trigger-cloudflare-pages:
+    name: Trigger Cloudflare Pages
+    needs: [deploy-backend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: POST deploy hook
+        env:
+          HOOK_URL: ${{ secrets.CLOUDFLARE_PAGES_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "${HOOK_URL:-}" ]; then
+            echo "CLOUDFLARE_PAGES_DEPLOY_HOOK_URL is not set — skipping Cloudflare Pages trigger."
+            echo "Add it under Repository secrets to rebuild the frontend after each deploy."
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK_URL"
+          echo "Cloudflare Pages deploy hook triggered."

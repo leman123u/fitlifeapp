@@ -1,0 +1,22 @@
+# Reduces upload size for `gcloud app deploy`
+.gcloudignore
+.git
+.gitignore
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.env
+.env.*
+*.md
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+*.egg-info/
+.idea/
+.vscode/

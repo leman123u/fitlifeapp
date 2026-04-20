@@ -1,0 +1,3 @@
+# Cloudflare Pages — SPA fallback for React Router (client-side routes)
+# Serves index.html for all paths so /workouts, /login, etc. work on refresh.
+/*    /index.html   200

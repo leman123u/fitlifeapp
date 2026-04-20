@@ -1,0 +1,103 @@
+@import 'tailwindcss';
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Legacy pages (non-Tailwind layout) */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+.brand {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  font-size: 0.95rem;
+}
+
+.nav a {
+  opacity: 0.92;
+}
+
+.nav a:hover {
+  opacity: 1;
+}
+
+.app-main {
+  flex: 1;
+  padding: 1.5rem 1.25rem 2.5rem;
+  max-width: 52rem;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.page h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+}
+
+.lede {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  color: #334155;
+}
+
+.muted {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.gym-type-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0;
+}
+
+.chip {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #0f172a;
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.chip:hover {
+  border-color: #94a3b8;
+}
+
+.chip.active {
+  background: #0f172a;
+  color: #f8fafc;
+  border-color: #0f172a;
+}

@@ -1,0 +1,8 @@
+.env
+.venv/
+
+# Firebase Admin service account JSON (see GOOGLE_APPLICATION_CREDENTIALS in .env.example)
+secrets/
+__pycache__/
+*.pyc
+.pytest_cache/
