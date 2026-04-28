@@ -7,7 +7,7 @@ export function Layout() {
       <header className="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-3">
           <Link to="/" className="text-lg font-bold tracking-tight text-white">
-            FitLife <span className="text-orange-400">Pro</span>
+            FitLife <span className="text-orange-400">Slim</span>
           </Link>
           <Link
             to="/profile"

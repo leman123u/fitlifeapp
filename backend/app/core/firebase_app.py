@@ -87,10 +87,13 @@ def init_firebase(*, allow_missing_credentials: bool = False) -> None:
     """
     Initialize Firebase Admin once.
 
-    Path resolution: ``FIREBASE_SERVICE_ACCOUNT_PATH``, then ``GOOGLE_APPLICATION_CREDENTIALS``,
-    then ``<backend>/firebase-admin-key.json``.
+    Credential resolution order:
+    1. ``FIREBASE_SERVICE_ACCOUNT_JSON`` env var (JSON string — for cloud deployments)
+    2. ``FIREBASE_SERVICE_ACCOUNT_PATH`` env var (file path)
+    3. ``GOOGLE_APPLICATION_CREDENTIALS`` env var (file path)
+    4. ``<backend>/firebase-admin-key.json`` (local default)
 
-    If no file is found and ``allow_missing_credentials`` is True (e.g. local mock auth),
+    If no credentials are found and ``allow_missing_credentials`` is True (e.g. local mock auth),
     logs a warning and returns without initializing — the API can still run for MOCK_AUTH flows.
     """
     global _initialized
@@ -104,12 +107,33 @@ def init_firebase(*, allow_missing_credentials: bool = False) -> None:
         _initialized = True
         return
 
+    # 1. Try JSON string from environment variable (preferred for cloud deployments)
+    json_env = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON", "").strip()
+    if json_env:
+        try:
+            service_account_info = json.loads(json_env)
+            cred = credentials.Certificate(service_account_info)
+            firebase_admin.initialize_app(cred)
+            _initialized = True
+            proj = service_account_info.get("project_id", "?")
+            client = service_account_info.get("client_email", "?")
+            logger.info(
+                "Firebase Admin SDK initialized from FIREBASE_SERVICE_ACCOUNT_JSON env var: project_id=%s client=%s",
+                proj,
+                client,
+            )
+            return
+        except Exception as e:
+            logger.error("Failed to parse FIREBASE_SERVICE_ACCOUNT_JSON: %s", e)
+            raise
+
+    # 2 & 3 & 4. Fall back to file-based resolution
     cred_path, default_cred_path = _resolve_firebase_key_path()
 
     fb_env = os.environ.get("FIREBASE_SERVICE_ACCOUNT_PATH", "").strip()
     gac_env = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "").strip()
     logger.info(
-        "Firebase key lookup: FIREBASE_SERVICE_ACCOUNT_PATH=%r GOOGLE_APPLICATION_CREDENTIALS=%r default=%s",
+        "Firebase key lookup: FIREBASE_SERVICE_ACCOUNT_JSON=(unset) FIREBASE_SERVICE_ACCOUNT_PATH=%r GOOGLE_APPLICATION_CREDENTIALS=%r default=%s",
         fb_env or "(unset)",
         gac_env or "(unset)",
         default_cred_path,
@@ -118,7 +142,8 @@ def init_firebase(*, allow_missing_credentials: bool = False) -> None:
     if not cred_path or not os.path.isfile(cred_path):
         msg = (
             f"Firebase service account JSON not found (looked for "
-            f"FIREBASE_SERVICE_ACCOUNT_PATH / GOOGLE_APPLICATION_CREDENTIALS, then {default_cred_path})."
+            f"FIREBASE_SERVICE_ACCOUNT_JSON env var, FIREBASE_SERVICE_ACCOUNT_PATH / "
+            f"GOOGLE_APPLICATION_CREDENTIALS, then {default_cred_path})."
         )
         if allow_missing_credentials:
             logger.warning("%s Skipping Firebase Admin init (mock/dev mode).", msg)

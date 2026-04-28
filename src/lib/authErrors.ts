@@ -10,7 +10,7 @@ export function getAuthErrorMessage(error: unknown): string {
       'auth/user-not-found': 'No account found with this email.',
       'auth/wrong-password': 'Incorrect password. Try again.',
       'auth/invalid-credential':
-        'Wrong email or password. Check your credentials or use Google sign-in.',
+        'Wrong email or password, or there is no password account for this email yet. Use Create an account, try Google sign-in, or reset your password.',
       'auth/too-many-requests': 'Too many attempts. Wait a moment and try again.',
       'auth/email-already-in-use': 'An account already exists with this email.',
       'auth/weak-password': 'Password should be at least 6 characters (we recommend 8+).',

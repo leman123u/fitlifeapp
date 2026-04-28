@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { fetchDashboardSummary, tapWaterGlass, type DashboardSummary } from '../api/dashboard.ts'
 import { useAuth } from '../hooks/useAuth.ts'
+import { isNetworkFailure } from '../lib/networkError.ts'
 
 const MACRO_COLORS = {
   protein: '#fb923c',
@@ -111,7 +112,13 @@ export default function DashboardPage() {
       const s = await fetchDashboardSummary()
       setSummary(s)
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : 'Could not load dashboard')
+      if (isNetworkFailure(e)) {
+        setLoadError(
+          'Cannot reach the API at port 8000 (connection refused). In a separate terminal from the project root run: npm run dev:api',
+        )
+      } else {
+        setLoadError(e instanceof Error ? e.message : 'Could not load dashboard')
+      }
     } finally {
       setLoading(false)
     }

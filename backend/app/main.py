@@ -54,9 +54,25 @@ app = FastAPI(
 
 register_exception_handlers(app)
 
+# Always allow Vite dev server; merge with CORS_ORIGINS from .env (see get_cors_origins).
+def _cors_allow_origins() -> list[str]:
+    merged = [
+        *get_cors_origins(),
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
+    seen: set[str] = set()
+    out: list[str] = []
+    for origin in merged:
+        if origin and origin not in seen:
+            seen.add(origin)
+            out.append(origin)
+    return out
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=get_cors_origins(),
+    allow_origins=_cors_allow_origins(),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],

@@ -35,7 +35,6 @@ def verify_firebase_id_token(id_token: str) -> dict:
                 "email": os.environ.get("MOCK_EMAIL", "dev@example.com").strip(),
                 "name": os.environ.get("MOCK_NAME", "Dev User").strip(),
             }
-        # Otherwise verify like production (real Firebase ID token from the app).
 
     init_firebase()
     if not is_firebase_configured():
@@ -46,7 +45,7 @@ def verify_firebase_id_token(id_token: str) -> dict:
     try:
         from firebase_admin import auth
 
-        return auth.verify_id_token(id_token)
+        return auth.verify_id_token(id_token, clock_skew_seconds=60)
     except Exception as e:
         logger.info("Firebase ID token verification failed: %s", e)
         raise HTTPException(

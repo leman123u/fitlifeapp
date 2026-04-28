@@ -4,6 +4,9 @@
  */
 import { auth } from '../firebase.js'
 
+/** FastAPI backend origin (override with VITE_API_URL in `.env`). */
+export const API_BASE_URL = 'http://127.0.0.1:8000'
+
 /**
  * @returns {Promise<Record<string, string>>} Authorization header with a freshly minted ID token
  */

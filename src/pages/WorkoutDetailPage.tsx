@@ -15,12 +15,63 @@ function hashHue(id: string): number {
   return h % 360
 }
 
+function getLocalVideo(w: WorkoutPlan): string | null {
+  const name = w.name?.toLowerCase() ?? ''
+
+  // Bodybuilding
+  if (name.includes('leg') || name.includes('squat'))
+    return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/man-doing-barbell-back-squat-exercise-for-legs-animation-gif-download-8971908.mp4'
+
+  if (name.includes('back') && name.includes('bicep'))
+    return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/man-doing-bicep-curls-exercise-animation-gif-download-12270512.mp4'
+
+  if (name.includes('push') || name.includes('chest') || name.includes('hypertrophy'))
+    return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/man-doing-resistance-band-chest-press-exercise-for-chest-animation-gif-download-10108816.mp4'
+
+  // CrossFit
+  if (name.includes('metcon'))
+    return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/man-doing-barbell-bent-over-row-exercise-for-back-animation-gif-download-8971883.mp4'
+
+  if (name.includes('chipper'))
+    return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/man-doing-barbell-deadlift-exercise-for-legs-and-back-animation-gif-download-8971933.mp4'
+
+  if (name.includes('olympic'))
+    return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/man-doing-barbell-front-squat-exercise-for-legs-animation-gif-download-8971909.mp4'
+
+  // Yoga
+  if (name.includes('hatha'))
+    return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/girl-doing-king-warrior-yoga-pose-animation-gif-download-4562551.mp4'
+
+  if (name.includes('vinyasa'))
+    return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/girl-doing-warrior-yoga-pose-animation-gif-download-4562555.mp4'
+
+  if (name.includes('yin'))
+    return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/woman-doing-cat-yoga-pose-animation-gif-download-4562554.mp4'
+
+  // Home
+  if (name.includes('band') || name.includes('core burn'))
+    return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/man-doing-resistance-band-dead-bug-leg-lowering-exercise-for-abs-and-core-animation-gif-download-10108746.mp4'
+
+  if (name.includes('dumbbell') || name.includes('full body'))
+    return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/man-doing-dumbbell-overhead-squat-exercise-for-legs-animation-gif-download-8798314.mp4'
+
+  // Calisthenics
+  if (name.includes('hiit') || name.includes('bodyweight'))
+    return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/man-doing-burpee-cardio-exercise-animation-gif-download-10469952.mp4'
+
+  if (name.includes('pull'))
+    return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/man-doing-assisted-pull-up-exercise-for-back-animation-gif-download-9729906.mp4'
+
+  return null
+}
+
 export default function WorkoutDetailPage() {
   const { workoutId } = useParams<{ workoutId: string }>()
   const { user, loading: authLoading } = useAuth()
   const [workout, setWorkout] = useState<WorkoutPlan | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [videoUrl, setVideoUrl] = useState<string | null>(null)
 
   const [sessionOn, setSessionOn] = useState(false)
   const [restIdx, setRestIdx] = useState(0)
@@ -46,6 +97,12 @@ export default function WorkoutDetailPage() {
   useEffect(() => {
     if (!authLoading && user && workoutId) void load()
   }, [authLoading, user, workoutId, load])
+
+  useEffect(() => {
+    if (!workout) return
+    const local = getLocalVideo(workout)
+    if (local) setVideoUrl(local)
+  }, [workout])
 
   useEffect(() => {
     if (restLeft === null || restLeft <= 0) return
@@ -114,13 +171,8 @@ export default function WorkoutDetailPage() {
     )
   }
 
-  if (!user) {
-    return <Navigate to="/login" replace />
-  }
-
-  if (!workoutId) {
-    return <Navigate to="/workouts" replace />
-  }
+  if (!user) return <Navigate to="/login" replace />
+  if (!workoutId) return <Navigate to="/workouts" replace />
 
   if (loading && !workout) {
     return (
@@ -172,27 +224,33 @@ export default function WorkoutDetailPage() {
         </div>
       </div>
 
-      {/* GIF placeholder */}
-      <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
-        <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950">
-          <div
-            className="absolute inset-0 opacity-40"
-            style={{
-              background: `conic-gradient(from 180deg at 50% 50%, hsla(${hue},80%,50%,0.3), transparent, hsla(${(hue + 60) % 360},70%,40%,0.25))`,
-              animation: 'spin 12s linear infinite',
-            }}
+      <div className="relative rounded-2xl border border-slate-800 bg-white">
+        {videoUrl ? (
+          <video
+            src={videoUrl}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full object-contain rounded-2xl"
           />
-          <div className="relative z-10 flex flex-col items-center gap-2 text-center">
-            <span className="text-5xl" aria-hidden>
-              🏋️
-            </span>
-            <p className="text-sm font-medium text-slate-300">Exercise demo</p>
-            <p className="max-w-xs text-xs text-slate-500">Animated preview coming soon</p>
+        ) : (
+          <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 rounded-2xl">
+            <div
+              className="absolute inset-0 opacity-40 rounded-2xl"
+              style={{
+                background: `conic-gradient(from 180deg at 50% 50%, hsla(${hue},80%,50%,0.3), transparent, hsla(${(hue + 60) % 360},70%,40%,0.25))`,
+                animation: 'spin 12s linear infinite',
+              }}
+            />
+            <div className="relative z-10 flex flex-col items-center gap-2 text-center">
+              <span className="text-5xl" aria-hidden>🏋️</span>
+              <p className="text-sm font-medium text-slate-300">Video mövcud deyil</p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Rest timer */}
       <section className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-orange-400/90">Session</h2>
         {sessionOn && restLeft !== null && restLeft > 0 && currentExercise ? (
@@ -203,9 +261,7 @@ export default function WorkoutDetailPage() {
             <p className="text-center text-lg font-semibold text-white">{currentExercise.name}</p>
             <div
               className="relative flex h-36 w-36 items-center justify-center rounded-full border-4 border-orange-500/40 bg-slate-950/80 shadow-inner shadow-black/50"
-              style={{
-                boxShadow: `0 0 40px hsla(${hue}, 80%, 50%, 0.15)`,
-              }}
+              style={{ boxShadow: `0 0 40px hsla(${hue}, 80%, 50%, 0.15)` }}
             >
               <span className="font-mono text-4xl font-bold tabular-nums text-orange-300">
                 {formatClock(restLeft)}
@@ -223,7 +279,7 @@ export default function WorkoutDetailPage() {
         ) : (
           <p className="mt-2 text-sm text-slate-500">
             {sessionOn
-              ? 'Rest periods finished for this pass — start again anytime.'
+              ? 'Rest periods finished — start again anytime.'
               : 'Start a guided rest timer between exercise blocks.'}
           </p>
         )}
@@ -237,7 +293,6 @@ export default function WorkoutDetailPage() {
         </button>
       </section>
 
-      {/* Exercise list */}
       <section>
         <h2 className="mb-3 text-lg font-bold text-white">Exercises</h2>
         <ol className="space-y-3">
@@ -256,7 +311,9 @@ export default function WorkoutDetailPage() {
               <p className="mt-2 text-sm text-slate-400">
                 {ex.sets} sets × {ex.reps} reps · rest {formatClock(ex.rest_seconds)}
               </p>
-              {ex.description ? <p className="mt-2 text-sm leading-relaxed text-slate-500">{ex.description}</p> : null}
+              {ex.description ? (
+                <p className="mt-2 text-sm leading-relaxed text-slate-500">{ex.description}</p>
+              ) : null}
             </li>
           ))}
         </ol>
@@ -275,11 +332,7 @@ export default function WorkoutDetailPage() {
       ) : null}
 
       <style>{`
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
   )
