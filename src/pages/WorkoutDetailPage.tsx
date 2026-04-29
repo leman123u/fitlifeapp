@@ -62,6 +62,16 @@ function getLocalVideo(w: WorkoutPlan): string | null {
   if (name.includes('pull'))
     return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/man-doing-assisted-pull-up-exercise-for-back-animation-gif-download-9729906.mp4'
 
+  // Swimming
+  if (name.includes('freestyle') || name.includes('aerobic'))
+    return 'yt:xQ0-bM6FKTk'
+
+  if (name.includes('sprint') || name.includes('power'))
+    return 'yt:f1xZSIaGTJY'
+
+  if (name.includes('im technique') || name.includes('technique') || name.includes('drill'))
+    return 'yt:4vgtfijXiEg'
+
   return null
 }
 
@@ -224,8 +234,18 @@ export default function WorkoutDetailPage() {
         </div>
       </div>
 
-      <div className="relative rounded-2xl border border-slate-800 bg-white">
-        {videoUrl ? (
+      <div className="relative rounded-2xl border border-slate-800 bg-black overflow-hidden">
+        {videoUrl?.startsWith('yt:') ? (
+          <div className="aspect-video w-full">
+            <iframe
+              src={`https://www.youtube.com/embed/${videoUrl.slice(3)}?autoplay=0&rel=0&modestbranding=1`}
+              title="Workout video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="w-full h-full rounded-2xl"
+            />
+          </div>
+        ) : videoUrl ? (
           <video
             src={videoUrl}
             autoPlay
