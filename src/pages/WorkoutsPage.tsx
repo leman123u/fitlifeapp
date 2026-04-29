@@ -80,9 +80,15 @@ function getLocalVideo(w: WorkoutPlan): string | null {
   if (name.includes('pull'))
     return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/man-doing-assisted-pull-up-exercise-for-back-animation-gif-download-9729906.mp4'
 
-  // Swimming / Aerobic
+  // Swimming
   if (name.includes('freestyle') || name.includes('aerobic'))
-    return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/man-doing-jumping-jack-cardio-exercise-animation-gif-download-10469952.mp4'
+    return 'yt:xQ0-bM6FKTk'
+
+  if (name.includes('sprint') || name.includes('power'))
+    return 'yt:f1xZSIaGTJY'
+
+  if (name.includes('im technique') || name.includes('technique') || name.includes('drill'))
+    return 'yt:4vgtfijXiEg'
 
   return null
 }
@@ -98,6 +104,9 @@ function WorkoutCard({ w }: { w: WorkoutPlan }) {
     if (local) setVideoUrl(local)
   }, [w])
 
+  const isYoutube = videoUrl?.startsWith('yt:')
+  const ytId = isYoutube ? videoUrl!.slice(3) : null
+
   return (
     <li>
       <Link
@@ -108,7 +117,13 @@ function WorkoutCard({ w }: { w: WorkoutPlan }) {
           className="relative h-40 w-full overflow-hidden"
           style={{ background: `linear-gradient(135deg, ${from}, ${to})` }}
         >
-          {videoUrl ? (
+          {isYoutube && ytId ? (
+            <img
+              src={`https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`}
+              alt={w.name}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : videoUrl ? (
             <video
               src={videoUrl}
               autoPlay
