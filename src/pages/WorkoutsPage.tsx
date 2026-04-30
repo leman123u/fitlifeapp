@@ -190,7 +190,10 @@ export default function WorkoutsPage() {
 
   const sorted = useMemo(
     () => [...workouts]
-      .filter(w => !HIDDEN_WORKOUTS.includes(w.name))
+      .filter(w => {
+        const n = w.name.toLowerCase().trim()
+        return !n.includes('sprint & power') && !n.includes('im technique')
+      })
       .sort((a, b) => a.name.localeCompare(b.name)),
     [workouts],
   )
