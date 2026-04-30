@@ -12,8 +12,6 @@ const TABS = [
   { key: 'calisthenics', label: 'Calisthenics' },
 ]
 
-const HIDDEN_WORKOUTS = ['Sprint & Power Sets', 'IM Technique & Drills']
-
 function hashHue(id: string): number {
   let h = 0
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
