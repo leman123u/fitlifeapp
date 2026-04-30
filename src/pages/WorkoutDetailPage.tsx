@@ -17,6 +17,7 @@ function hashHue(id: string): number {
 
 function getLocalVideo(w: WorkoutPlan): string | null {
   const name = w.name?.toLowerCase() ?? ''
+  const gymType = (w.gym_type ?? '').toLowerCase()
 
   // Bodybuilding
   if (name.includes('leg') || name.includes('squat'))
@@ -63,14 +64,13 @@ function getLocalVideo(w: WorkoutPlan): string | null {
     return 'https://cdnl.iconscout.com/lottie/premium/preview-watermark/man-doing-assisted-pull-up-exercise-for-back-animation-gif-download-9729906.mp4'
 
   // Swimming
-  if (name.includes('freestyle') || name.includes('aerobic'))
-    return 'yt:xQ0-bM6FKTk'
-
-  if (name.includes('sprint') || name.includes('power'))
-    return 'yt:f1xZSIaGTJY'
-
-  if (name.includes('im technique') || name.includes('technique') || name.includes('drill'))
+  if (gymType.includes('swim') || name.includes('swim')) {
+    if (name.includes('freestyle') || name.includes('aerobic'))
+      return 'yt:xQ0-bM6FKTk'
+    if (name.includes('sprint') || name.includes('power'))
+      return 'yt:f1xZSIaGTJY'
     return 'yt:4vgtfijXiEg'
+  }
 
   return null
 }
@@ -338,7 +338,6 @@ export default function WorkoutDetailPage() {
           ))}
         </ol>
       </section>
-
       <button
         type="button"
         onClick={() => void completeWorkout()}
